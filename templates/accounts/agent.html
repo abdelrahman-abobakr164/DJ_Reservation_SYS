@@ -1,0 +1,203 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block body %}
+
+  <main class="main">
+
+    <!-- Page Title -->
+    <div class="page-title light-background">
+      <div class="container d-lg-flex justify-content-between align-items-center">
+        <h1 class="mb-2 mb-lg-0">Agent Profile</h1>
+        <nav class="breadcrumbs">
+          <ol>
+            <li><a href="/">Home</a></li>
+            <li class="current">Agent Profile</li>
+          </ol>
+        </nav>
+      </div>
+    </div><!-- End Page Title -->
+
+    <!-- Agent Profile Section -->
+    <section id="agent-profile" class="agent-profile section">
+
+      <div class="container" data-aos="fade-up" data-aos-delay="100">
+
+        <!-- Hero Profile Header -->
+        <div class="row align-items-center mb-5">
+          <div class="col-lg-4" data-aos="fade-right" data-aos-delay="150">
+            <div class="agent-photo-wrapper">
+              <img src="{{agent.image.url}}" alt="Agent Profile" class="img-fluid agent-photo">
+            </div>
+          </div>
+          <div class="col-lg-8" data-aos="fade-left" data-aos-delay="200">
+            <div class="agent-info">
+              <h1 class="agent-name">{{agent.username}}</h1>
+              <p class="agent-title">{{agent.job_title}}</p>
+              <p class="agent-tagline">{{agent.job_des}}</p>
+
+              <div class="contact-info-hero">
+                <div class="contact-item">
+                  <i class="bi bi-telephone-fill"></i>
+                  <span>{{agent.phone}}</span>
+                </div>
+                <div class="contact-item">
+                  <i class="bi bi-envelope-fill"></i>
+                  <span>{{agent.email}}</span>
+                </div>
+                <div class="contact-item">
+                  <i class="bi bi-geo-alt-fill"></i>
+                  <span>{{agent.office}}</span>
+                </div>
+              </div>
+
+              <div class="hero-actions">
+                <a href="#contact" class="btn btn-primary">Contact Me Now</a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Agent Bio & Specialties -->
+        <div class="row mb-5" data-aos="fade-up" data-aos-delay="150">
+          <div class="col-lg-4 mb-4">
+            <div class="sidebar-info">
+              <div class="contact-card">
+                <h4>Get In Touch</h4>
+
+                <div class="contact-details">
+                  <div class="contact-detail">
+                    <i class="bi bi-telephone"></i>
+                    <div>
+                      <strong>Phone</strong>
+                      <p>{{agent.phone}}</p>
+                    </div>
+                  </div>
+                  <div class="contact-detail">
+                    <i class="bi bi-envelope"></i>
+                    <div>
+                      <strong>Email</strong>
+                      <p>{{agent.email}}</p>
+                    </div>
+                  </div>
+                  <div class="contact-detail">
+                    <i class="bi bi-geo-alt"></i>
+                    <div>
+                      <strong>Office</strong>
+                      <p>{{agent.office}}</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="social-links">
+                  <a href="{{agent.linkedin}}"><i class="bi bi-linkedin"></i></a>
+                  <a href="{{agent.facebook}}"><i class="bi bi-facebook"></i></a>
+                  <a href="{{agent.instagram}}"><i class="bi bi-instagram"></i></a>
+                  
+                  <a href="tel:{{agent.phone}}"><i class="bi bi-whatsapp"></i></a>
+                </div>
+              </div>
+
+              <div class="specialties-card">
+                <h4>Specialties</h4>
+                <div class="specialty-tags">
+                {% for i in agent.specialties.all %}
+                  <span class="specialty-tag">{{i.title}}</span>
+                {% endfor %}
+                </div>
+              </div>
+
+              <div class="certifications-card">
+                <h4>Certifications</h4>
+                {% for i in agent.graduation.all %}
+                <div class="cert-item">
+                  <i class="bi bi-shield-check"></i>
+                  <span><b>Graduation</b>:  {{i.title}} </span>
+                </div>
+                {% endfor %}
+                {% for i in agent.certifications.all %}
+                <div class="cert-item">
+                  <i class="bi bi-award-fill"></i>
+                  <span>{{ i.title }}</span>
+                </div>
+                {% endfor %}
+
+              </div>
+            </div>
+          </div>
+
+          <div class="col-lg-8">
+            <div class="bio-content">
+              <h3>About {{agent.username}}</h3>
+              <p>{{agent.about_me}} </p>
+              <h4>My Approach</h4>
+              <p>{{agent.my_approach}} </p>
+              <div class="achievements">
+                <h4>Recent Achievements</h4>
+                <ul>
+                {% for i in agent.recentachievement.all %}
+                  <li>{{i}}</li>
+                {% endfor %}
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Contact Form -->
+        <div class="contact-form-section" id="contact" data-aos="fade-up" data-aos-delay="100">
+          <div class="row">
+            <div class="col-lg-8 mx-auto">
+              <div class="contact-form-wrapper">
+                <h3 class="text-center mb-4">Book an Appointment</h3>
+
+                <form method="POST" >
+                  {% csrf_token %}
+                  <div class="row">
+                    <div class="col-md-6 mb-3">
+                      {{form.as_p}}
+                      {% comment %} <label for="name" class="form-label">Full Name</label>
+                      <input type="text" name="name" class="form-control" id="name" required=""> {% endcomment %}
+                    </div>
+                    {% comment %} <div class="col-md-6 mb-3">
+                      <label for="email" class="form-label">Email Address</label>
+                      <input type="email" name="email" class="form-control" id="email" required="">
+                    </div> {% endcomment %}
+                  </div>
+{% comment %} 
+                  <div class="row">
+                    <div class="col-md-6 mb-3">
+                      <label for="phone" class="form-label">Phone Number</label>
+                      <input type="tel" name="phone" class="form-control" id="phone">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                      <label for="service" class="form-label">I'm Interested In</label>
+                      <select name="subject" class="form-control" id="service" required>
+
+                      </select>
+                    </div>
+                  </div>
+
+                  <div class="mb-3">
+                    <label for="message" class="form-label">Message</label>
+                    <textarea name="message" class="form-control" id="message" rows="5" placeholder="Tell me about your real estate needs and preferences..."></textarea>
+                  </div> {% endcomment %}
+
+                  <div class="message"></div>
+
+                  <div class="text-center">
+                    <button type="submit" class="btn btn-primary btn-lg">Send Message</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </section><!-- /Agent Profile Section -->
+
+  </main>
+
+{% endblock body %}

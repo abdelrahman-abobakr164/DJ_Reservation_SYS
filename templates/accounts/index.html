@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block body %}
+
+  <main class="main">
+
+    <!-- Page Title -->
+    <div class="page-title light-background">
+      <div class="container d-lg-flex justify-content-between align-items-center">
+        <h1 class="mb-2 mb-lg-0">Agents</h1>
+        <nav class="breadcrumbs">
+          <ol>
+            <li><a href="/">Home</a></li>
+            <li class="current">Agents</li>
+          </ol>
+        </nav>
+      </div>
+    </div><!-- End Page Title -->
+
+    <!-- Agents Section -->
+    <section id="agents" class="agents section">
+
+      <div class="container" data-aos="fade-up" data-aos-delay="100">
+
+        <div class="row gy-4">
+          
+          {% for i in users %}
+            <div class="col-xl-3 col-md-6" data-aos="fade-up" data-aos-delay="100">
+              <div class="agent-card">
+                <div class="agent-image">
+                  <img src="{{ user.image.url }}" alt="Agent" class="img-fluid">
+
+                </div>
+                <div class="agent-info">
+                  <h4>{{ user.name }}</h4>
+                  <span class="role">{{ user.job_title }}</span>
+                  <p class="location"><i class="bi bi-geo-alt"></i>{{ user.office }}</p>
+                  <div class="specialties">
+                    
+                    {% for i in user.specialties.all|slice:'2' %}
+                      <span class="specialty-tag">Luxury Homes</span>
+                    {% endfor %}
+                  </div>
+                  <div class="contact-links">
+                    <a href="tel:{{ user.phone }}"><i class="bi bi-telephone"></i></a>
+                    <a href="mailto:{{ user.email }}"><i class="bi bi-envelope"></i></a>
+                    <a href="{{user.phone}}"><i class="bi bi-whatsapp"></i></a>
+                    <a href="{{user.linkedin}}"><i class="bi bi-linkedin"></i></a>
+                  </div>
+                  <a href="{% url 'detail' user.username %}" class="view-listings-btn">View Listings</a>
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+
+        </div>
+      </div>
+    </section>
+  </main>
+
+{% endblock body %}
