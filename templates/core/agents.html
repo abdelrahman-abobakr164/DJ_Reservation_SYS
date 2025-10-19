@@ -29,26 +29,26 @@
             <div class="col-xl-3 col-md-6" data-aos="fade-up" data-aos-delay="100">
               <div class="agent-card">
                 <div class="agent-image">
-                  <img src="{{ user.image.url }}" alt="Agent" class="img-fluid">
+                  <img src="{{ i.image.url }}" alt="Agent" class="img-fluid">
 
                 </div>
                 <div class="agent-info">
-                  <h4>{{ user.name }}</h4>
-                  <span class="role">{{ user.job_title }}</span>
-                  <p class="location"><i class="bi bi-geo-alt"></i>{{ user.office }}</p>
+                  <h4>{{ i.name }}</h4>
+                  <span class="role">{{ i.job_title }}</span>
+                  <p class="location"><i class="bi bi-geo-alt"></i>{{ i.office }}</p>
                   <div class="specialties">
                     
-                    {% for i in user.specialties.all|slice:'2' %}
+                    {% for i in i.specialties.all|slice:'2' %}
                       <span class="specialty-tag">Luxury Homes</span>
                     {% endfor %}
                   </div>
                   <div class="contact-links">
-                    <a href="tel:{{ user.phone }}"><i class="bi bi-telephone"></i></a>
-                    <a href="mailto:{{ user.email }}"><i class="bi bi-envelope"></i></a>
-                    <a href="{{user.phone}}"><i class="bi bi-whatsapp"></i></a>
-                    <a href="{{user.linkedin}}"><i class="bi bi-linkedin"></i></a>
+                    <a href="tel:{{ i.phone }}"><i class="bi bi-telephone"></i></a>
+                    <a href="mailto:{{ i.email }}"><i class="bi bi-envelope"></i></a>
+                    <a href="{{i.phone}}"><i class="bi bi-whatsapp"></i></a>
+                    <a href="{{i.linkedin}}"><i class="bi bi-linkedin"></i></a>
                   </div>
-                  <a href="{% url 'detail' user.username %}" class="view-listings-btn">View Listings</a>
+                  <a href="{% url 'agent_detail' i.username %}" class="view-listings-btn">View Listings</a>
                 </div>
               </div>
             </div>

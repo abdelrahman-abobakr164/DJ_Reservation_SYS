@@ -4,25 +4,15 @@ from django.contrib.auth.models import (
     AbstractBaseUser,
     PermissionsMixin,
 )
-
 from phonenumber_field.modelfields import PhoneNumberField
-from django.core.validators import MinValueValidator, MaxValueValidator
-from datetime import datetime, timedelta, time
+from django.core.validators import MinValueValidator
+from core.models import ELDay
 
-DAYCHOICE = (
-    (0, "Saturday"),
-    (1, "Sunday"),
-    (2, "Monday"),
-    (3, "tuesday"),
-    (4, "thursday"),
-    (5, "Wednesday"),
-    (6, "Friday"),
-)
-
-SUBJECT = (
-    ("Detection", "Detection"),
-    ("Submiting an Application", "Submiting an Application"),
-    ("Interview", "Interview"),
+BOOKING_DURATION = (
+    (1, "1/2 Hour"),
+    (2, "1 Hour"),
+    (3, "2 Hours"),
+    (4, "3 Hours"),
 )
 
 
@@ -65,20 +55,25 @@ class User(AbstractBaseUser, PermissionsMixin):
     last_name = models.CharField(max_length=150, null=True, blank=True)
     email = models.EmailField(max_length=254, unique=True)
     username = models.CharField(max_length=150, unique=True)
-    job_title = models.CharField(max_length=50)
-    job_des = models.CharField(max_length=50)
-    image = models.ImageField(upload_to="UserImages/")
-    phone = PhoneNumberField(region="EG")
-    about_me = models.TextField()
-    my_approach = models.TextField()
-    office = models.CharField(max_length=200)
-    number_of_reservations = models.PositiveIntegerField(default=1)
-    start_time = models.TimeField(null=True, blank=True)
-    endtime_time = models.TimeField(null=True, blank=True)
-    graduation = models.ManyToManyField("Graduation")
-    certifications = models.ManyToManyField("Certification")
-    specialties = models.ManyToManyField("Specialtie")
-    recentachievement = models.ManyToManyField("RecentAchievement", blank=True)
+    job_title = models.CharField(max_length=50, blank=True)
+    job_des = models.CharField(max_length=50, blank=True)
+    image = models.ImageField(upload_to="UserImages/", blank=True)
+    phone = PhoneNumberField(region="EG", blank=True)
+    about_me = models.TextField(blank=True)
+    my_approach = models.TextField(blank=True)
+    office = models.CharField(max_length=200, blank=True)
+    number_of_reservations = models.PositiveIntegerField(
+        default=1, validators=[MinValueValidator(1)], null=True, blank=True
+    )
+    appointments = models.PositiveIntegerField(
+        default=0, validators=[MinValueValidator(0)]
+    )
+    booking_duration = models.IntegerField(choices=BOOKING_DURATION)
+    working_hours = models.ManyToManyField(ELDay, blank=True)
+    graduation = models.ManyToManyField("Graduation", blank=True)
+    certifications = models.ManyToManyField("Certification", blank=True)
+    specialties = models.ManyToManyField("Specialtie", blank=True)
+    recent_achievements = models.ManyToManyField("RecentAchievement", blank=True)
 
     linkedin = models.URLField(max_length=200, null=True, blank=True)
     facebook = models.URLField(max_length=200, null=True, blank=True)
@@ -124,81 +119,31 @@ class User(AbstractBaseUser, PermissionsMixin):
         super().save(*args, **kwargs)
 
 
-class WorkDay(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    day_of_week = models.IntegerField(choices=DAYCHOICE, unique=True)
-    start_time = models.TimeField(default=time(9, 0))
-    end_time = models.TimeField(default=time(21, 0))
-
-    class Meta:
-        ordering = ("day_of_week",)
-
-    def __str__(self):
-        return f"{self.get_day_of_week_display()} from {self.start_time} to {self.end_time}"
-
-
-class Reservation(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    full_name = models.CharField(max_length=150)
-    email = models.EmailField(max_length=250)
-    phone = PhoneNumberField(region="EG")
-    subject = models.CharField(max_length=100, choices=SUBJECT)
-    created_at = models.DateTimeField(auto_now_add=True)
-    
-
-    class Meta:
-        unique_together = ["redate", "retime"]
-        ordering = ["redate", "retime"]
-
-    def __str__(self):
-        return f"{self.full_name} - {self.redate} {self.retime}"
-
-    def is_available(self):
-        conflict_date = Reservation.objects.filter(
-            redate=self.redate, retime=self.retime
-        ).exclude(id=self.id)
-        return not conflict_date.exists()
-
-
 class Certification(models.Model):
     title = models.CharField(max_length=250)
-    created_at = models.DateTimeField(auto_now_add=True)
+    image = models.ImageField(upload_to="UserImages/", null=True, blank=True)
 
     def __str__(self):
         return self.title
-
-    class Meta:
-        ordering = ("-created_at",)
-
-
-class Specialtie(models.Model):
-    title = models.CharField(max_length=250)
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return self.title
-
-    class Meta:
-        ordering = ("-created_at",)
-
-
-class RecentAchievement(models.Model):
-    title = models.CharField(max_length=250)
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return self.title
-
-    class Meta:
-        ordering = ("-created_at",)
 
 
 class Graduation(models.Model):
     title = models.CharField(max_length=250)
-    created_at = models.DateTimeField(auto_now_add=True)
+    image = models.ImageField(upload_to="UserImages/", null=True, blank=True)
 
     def __str__(self):
         return self.title
 
-    class Meta:
-        ordering = ("-created_at",)
+
+class Specialtie(models.Model):
+    title = models.CharField(max_length=250)
+
+    def __str__(self):
+        return self.title
+
+
+class RecentAchievement(models.Model):
+    title = models.CharField(max_length=250)
+
+    def __str__(self):
+        return self.title

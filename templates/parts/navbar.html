@@ -15,12 +15,27 @@
           <path d="M14 9.5C14 10.6046 13.1046 11.5 12 11.5C10.8954 11.5 10 10.6046 10 9.5C10 8.39543 10.8954 7.5 12 7.5C13.1046 7.5 14 8.39543 14 9.5Z" stroke="currentColor" stroke-width="1.5"></path>
         </g>
       </svg>
-      <h1 class="sitename">HomeSpace</h1>
+      <h1 class="sitename">AgentSpace</h1>
     </a>
 
     <nav id="navmenu" class="navmenu">
       <ul>
-        <li><a href="/" class="active">Home</a></li>
+        {% if request.user.is_authenticated %}
+          <li class='d-flex me-1'> 
+            <div class="dropdown" style="width:-300px">
+                <a href="{% url 'account' request.user.username %}" style='padding: 0px;'> <img src="{{request.user.image.url}}" style='border-radius: 50%; max-height:40px;  margin-left:10px' alt="MyAccountImage"></a>
+                <ul class="dropdown-menu shadow-lg border-0 rounded-xl mt-2">
+                  <li> <a href="{% url 'account' request.user.username %}" >My Account </a></li>
+                  <li><hr class="dropdown-divider"></li>
+                  <li><a href="{% url 'reservations' request.user.username  %}">Reservations</a></li>
+                </ul>
+            </div>
+          </li>
+          <li class='d-flex me-1'><a href="{% url 'scheduled-reservations' request.user.username %}" {% if 'scheduled-reservations' in request.path %} class="active" {% endif %} > <i class="bi bi-people-fill" style="font-size:30px"></i> </a> {{reservations_count}}</li> 
+        {% else %}
+        <li><a href="/" {% if request.path ==  '/'  %} class="active" {% endif %}>Home</a></li>
+
+        {% endif %}
       </ul>
       <i class="mobile-nav-toggle d-xl-none bi bi-list"></i>
     </nav>

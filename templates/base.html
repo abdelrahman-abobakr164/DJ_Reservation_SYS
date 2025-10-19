@@ -26,8 +26,29 @@
 </head>
 
 <body class="agents-page">
+    <style>
+      #alert_div{
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 9999;
+        min-width: 250px;
+        opacity: 1;
+        transition: opacity 0.5s; 
+      }
+    </style>
 
     {% include 'parts/navbar.html' %}
+
+    {% if messages %}
+      {% for msg in messages %}
+        {% if msg.level == 40 %}
+          <div class="alert alert-danger" id='alert_div'>{{msg}}</div>
+        {% else %}
+          <div class="alert alert-{{msg.tags}}" id='alert_div'>{{msg}}</div>
+        {% endif %}
+      {% endfor %}
+    {% endif %}
 
     {% block body %}
     
@@ -35,16 +56,24 @@
 
     {% include 'parts/footer.html' %}
 
-  <a href="#" id="scroll-top" class="scroll-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
+    <a href="#" id="scroll-top" class="scroll-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
 
-  <div id="preloader"></div>
+    <div id="preloader"></div>
 
   <script src="{% static 'assets/vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
   <script src="{% static 'assets/vendor/php-email-form/validate.js' %}"></script>
   <script src="{% static 'assets/vendor/aos/aos.js' %}"></script>
   <script src="{% static 'assets/vendor/purecounter/purecounter_vanilla.js' %}"></script>
   <script src="{% static 'assets/vendor/swiper/swiper-bundle.min.js' %}"></script>
-
+  <script>
+      const messageDiv = document.getElementById('alert_div');
+      document.onmousemove = function (e) {
+          setTimeout(() => {
+              messageDiv.style.opacity = 0;
+              setTimeout(() => messageDiv.remove(), 500);
+          }, 2500);
+      };
+  </script>
   <script src="{% static 'assets/js/main.js' %}"></script>
 
 </body>

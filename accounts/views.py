@@ -1,59 +1,189 @@
-from django.shortcuts import render, redirect, get_object_or_404
-from accounts.models import *
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib.auth import get_user_model
+from django.contrib import messages
 from accounts.forms import *
 
 
-def index(request):
-    users = User.objects.all()
-    datas = {
-        "pk": 2,
-        "fields": {
-            "password": "pbkdf2_sha256$720000$HgxoAIQk66Hiorc1FnSotm$TDZFrHPDEwLl7L7uX+4nsrqi7oY3GQzlwLDfDlIq6bM=",
-            "first_name": "Sara",
-            "last_name": "Martinez",
-            "email": "admin@gmail.com",
-            "username": "Sara Martinez",
-            "job_title": "Senior Real Estate Advisor",
-            "job_des": "Helping you find not just a house",
-            "image": "UserImages/agent-3.webp",
-            "phone": "+201099999999",
-            "about_me": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo.",
-            "my_approach": "Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem.",
-            "office": "Giza, Haram, Street1, 6th Floor",
-            "graduation": 1,
-            "linkedin": "http://Linkedin.com",
-            "facebook": "http://Facebook.com",
-            "instagram": "http://Instagram.com",
-            "is_active": True,
-            "is_staff": True,
-            "is_admin": True,
-            "is_superuser": True,
-            "date_joined": "2025-09-22T00:56:52.836Z",
-            "last_login": "2025-09-22T01:15:26.995Z",
-            "groups": [],
-            "user_permissions": [],
-            "certifications": [1],
-            "specialties": [8, 7, 6, 5, 2],
-            "recentachievement": [5, 4],
-        },
-    }
-    return render(request, "accounts/index.html", {"users": users})
+User = get_user_model()
 
 
-def agent_detail(request, username):
+def edit(request, username):
     agent = get_object_or_404(User, username=username)
-    if request.method == "POST":
-        form = ReservationForm(request.POST)
-        if form.is_valid():
-            reForm = form.save(commit=False)
-            reForm.user = agent
-            if reForm.is_available():
-                
-                reForm.save()
-                print("success")
+    if request.user.is_authenticated and request.user.username == agent.username:
+        form = UserForm(instance=agent)
+        if request.method == "POST":
+            form = UserForm(request.POST, request.FILES, instance=agent)
+            if form.is_valid():
+                form.save()
+                return redirect("account", username=agent.username)
             else:
-                print("this time is already booked ")
-
+                messages.error(request, f"Don't Mess, {form.errors.as_ul}")
+        return render(request, "accounts/account.html", {"form": form, "agent": agent})
     else:
-        form = ReservationForm()
-    return render(request, "accounts/agent.html", {"agent": agent, "form": form})
+        return redirect("agent_detail", username=username)
+
+
+def working_times(request, username):
+    agent = get_object_or_404(User, username=username)
+    if request.user.is_authenticated and request.user.username == agent.username:
+        form = WorkingTimesForm()
+        url = request.META.get("HTTP_REFERER")
+        WorkingTimes = ELDay.objects.filter(agent=agent)
+
+        if request.method == "POST":
+            action = request.POST.get("action")
+            elday_id = request.POST.get("working_time_id")
+
+            if action:
+                if action == "Remove":
+                    work_time_id = get_object_or_404(ELDay, id=elday_id)
+                    work_time_id.delete()
+                    return redirect(url)
+                else:
+                    messages.error(request, "Don't Mess")
+                    return redirect(url)
+            else:
+                form = WorkingTimesForm(request.POST)
+                if form.is_valid():
+                    subForm = form.save(commit=False)
+                    subForm.agent = agent
+                    subForm.save()
+                    agent.working_hours.add(subForm)
+                    return redirect(url)
+                else:
+                    messages.error(request, "Don't Mess")
+
+        context = {"WorkingTimes": WorkingTimes, "form": form}
+        return render(request, "accounts/working_times.html", context)
+    else:
+        return redirect("agent_detail", username=username)
+
+
+def graduations(request, username):
+    agent = get_object_or_404(User, username=username)
+    if request.user.is_authenticated and request.user.username == agent.username:
+        form = GraduationForm()
+        url = request.META.get("HTTP_REFERER")
+        if request.method == "POST":
+            action = request.POST.get("action")
+            graduation_id = request.POST.get("graduation_id")
+
+            if action:
+                if action == "Remove":
+                    grad_id = get_object_or_404(Graduation, id=graduation_id)
+                    grad_id.delete()
+                    return redirect(url)
+                else:
+                    messages.error(request, "Don't Mess")
+                    return redirect(url)
+            else:
+                form = GraduationForm(request.POST, request.FILES)
+                if form.is_valid():
+                    savingForm = form.save()
+                    agent.graduation.add(savingForm)
+                    return redirect(url)
+                else:
+                    messages.error(request, "Don't Mess")
+
+        context = {"agent": agent, "Graduationform": form}
+        return render(request, "accounts/graduations.html", context)
+    else:
+        return redirect("agent_detail", username=username)
+
+
+def certifications(request, username):
+    agent = get_object_or_404(User, username=username)
+    if request.user.is_authenticated and request.user.username == agent.username:
+        form = CertificationsForm()
+        url = request.META.get("HTTP_REFERER")
+        if request.method == "POST":
+            action = request.POST.get("action")
+            certifications_id = request.POST.get("certifications_id")
+
+            if action:
+                if action == "Remove":
+                    cert_id = get_object_or_404(Certification, id=certifications_id)
+                    cert_id.delete()
+                    return redirect(url)
+                else:
+                    messages.error(request, "Don't Mess")
+                    return redirect(url)
+            else:
+                form = CertificationsForm(request.POST, request.FILES)
+                if form.is_valid():
+                    savingForm = form.save()
+                    agent.certifications.add(savingForm)
+                    return redirect(url)
+                else:
+                    messages.error(request, "Don't Mess")
+
+        context = {"agent": agent, "Certificationsform": form}
+        return render(request, "accounts/certifications.html", context)
+    else:
+        return redirect("agent_detail", username=username)
+
+
+def recent_achievements(request, username):
+    agent = get_object_or_404(User, username=username)
+    if request.user.is_authenticated and request.user.username == agent.username:
+        form = RecentAchievementsForm()
+        url = request.META.get("HTTP_REFERER")
+        if request.method == "POST":
+            action = request.POST.get("action")
+            recent_achievements_id = request.POST.get("recent_achievements_id")
+
+            if action:
+                if action == "Remove":
+                    recent_id = get_object_or_404(
+                        RecentAchievement, id=recent_achievements_id
+                    )
+                    recent_id.delete()
+                    return redirect(url)
+                else:
+                    messages.error(request, "Don't Mess")
+                    return redirect(url)
+            else:
+                form = RecentAchievementsForm(request.POST)
+                if form.is_valid():
+                    savingForm = form.save()
+                    agent.recent_achievements.add(savingForm)
+                    return redirect(url)
+                else:
+                    messages.error(request, "Don't Mess")
+
+        context = {"agent": agent, "RecentAchievementsform": form}
+        return render(request, "accounts/recent_achievements.html", context)
+    else:
+        return redirect("agent_detail", username=username)
+
+
+def specialties(request, username):
+    agent = get_object_or_404(User, username=username)
+    if request.user.is_authenticated and request.user.username == agent.username:
+        url = request.META.get("HTTP_REFERER")
+        form = SpecialtiesForm()
+        if request.method == "POST":
+            action = request.POST.get("action")
+
+            if action:
+                if action == "Remove":
+                    specialties_id = request.POST.get("specialties_id")
+                    specialtie_id = get_object_or_404(Specialtie, id=specialties_id)
+                    specialtie_id.delete()
+                    return redirect(url)
+                else:
+                    messages.error(request, "Don't Mess")
+                    return redirect(url)
+            else:
+                form = SpecialtiesForm(request.POST)
+                if form.is_valid():
+                    savingForm = form.save()
+                    agent.specialties.add(savingForm)
+                    return redirect(url)
+                else:
+                    messages.error(request, "Don't Mess")
+
+        context = {"agent": agent, "Specialtiesform": form}
+        return render(request, "accounts/specialties.html", context)
+    else:
+        return redirect("agent_detail", username=username)

@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block body %}
+
+  <main class="main">
+
+    <div class="page-title light-background">
+      <div class="container d-lg-flex justify-content-between align-items-center">
+        <h1 class="mb-2 mb-lg-0">Working Times</h1>
+        <nav class="breadcrumbs">
+          <ol>
+            <li><a href='{% url "agent_detail" request.user.username %}' class='btn'>Profile</a></li>
+            <li class="current">Working Times</li>
+          </ol>
+        </nav>
+      </div>
+    </div>
+
+    <section id="contact-2" class="contact-2 section">
+
+      <div class="container" data-aos="fade-up" data-aos-delay="100">
+        <div class="row justify-content-center mb-5" data-aos="fade-up" data-aos-delay="200">
+          <div class="col-lg-12">
+            <div class="contact-form-wrapper">
+                <h2 class="text-center" style='margin-bottom:60px'>Working Times</h2>
+                <div class="row">
+                    <div class="col">
+                        <div class="certifications-card">
+                            <h3 class='text-black mb-5'>My Working Times <b>{{WorkingTimes.count}}/7</b> </h3>
+                            {% for days in WorkingTimes %}
+                            <div class="cert-item d-flex">
+                                <span>
+                                  <h5>
+                                    <b>{{ days.get_day_of_week_display }}</b>:  {{days.start_time}} - {{days.end_time}}
+                                  </h5>
+                                </span>
+                                <form method="POST" style='margin-left: auto'>
+                                  {% csrf_token %}
+                                  <button type="submit" class='btn btn-outline-danger' name='action' value='Remove'>Remove</button>
+                                  <input type="hidden" name="working_time_id" value="{{days.id}}">
+                                </form>
+                            </div><hr>
+                            {% empty %}
+                            <h5>It seems Like You Don't Like Work</h5>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <div class="col">
+                        <form method="POST">
+                          {% csrf_token %}
+                          {{form.as_p}}
+                          <button class="btn btn-outline-dark btn-lg w-100">Submit</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </section>
+
+  </main>
+
+{% endblock body %}

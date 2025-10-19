@@ -1,49 +1,113 @@
 from django import forms
-from datetime import date, time
-from .models import Reservation
-from phonenumber_field.formfields import PhoneNumberField
+from core.models import *
+from accounts.models import *
+from django.contrib.auth import get_user_model
 
 
-class ReservationForm(forms.ModelForm):
-    retime = forms.TimeField(
-        label="Time", required=True, widget=forms.TimeInput(attrs={"type": "time"})
-    )
-    redate = forms.DateField(
-        label="Date",
-        required=True,
-        widget=forms.DateInput(attrs={"type": "date", "min": date.today().isoformat()}),
-    )
-    phone = PhoneNumberField(required=True)
+User = get_user_model()
+
+
+DAYS_OF_WEEK = (
+    (0, "Monday"),
+    (1, "Tuesday"),
+    (2, "Wednesday"),
+    (3, "Thursday"),
+    (4, "Friday"),
+    (5, "Saturday"),
+    (6, "Sunday"),
+)
+
+
+class UserForm(forms.ModelForm):
+    image = forms.ImageField(widget=forms.FileInput(attrs={"class": "form-control"}))
 
     class Meta:
-        model = Reservation
+        model = User
         fields = [
-            "full_name",
+            "username",
             "email",
             "phone",
-            "subject",
-            "redate",
-            "retime",
+            "image",
+            "job_title",
+            "job_des",
+            "office",
+            "number_of_reservations",
+            "booking_duration",
+            "about_me",
+            "my_approach",
+            "linkedin",
+            "instagram",
+            "facebook",
         ]
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         for field in self.fields:
             self.fields[field].widget.attrs["class"] = "form-control"
-        self.fields["full_name"].widget.attrs["placeholder"] = "Full Name"
-        self.fields["email"].widget.attrs["placeholder"] = "Email Address"
-        self.fields["phone"].widget.attrs["placeholder"] = "+20xxxxxxxxxx"
+            self.fields[field].widget.attrs["placeholder"] = field.capitalize().replace(
+                "_", " "
+            )
+        self.fields["username"].label = "Full Name"
 
-    def clean(self):
-        clean_data = super().clean()
-        redate = self.cleaned_data.get("redate")
-        retime = self.cleaned_data.get("retime")
-        if redate and retime:
-            if redate < date.today():
-                raise forms.ValidationError("Cannot Make Reservations for Past Dates.")
-            if retime < time(9, 0) and retime > time(21, 0):
-                print(retime)
-                raise forms.ValidationError(
-                    "Reservations Must be Between 9:00 AM and 9:00 PM."
-                )
-        return clean_data
+
+class WorkingTimesForm(forms.ModelForm):
+    day_of_week = forms.ChoiceField(required=True, choices=DAYS_OF_WEEK)
+    start_time = forms.TimeField(
+        required=True, widget=forms.TimeInput(attrs={"type": "time"})
+    )
+    end_time = forms.TimeField(
+        required=True, widget=forms.TimeInput(attrs={"type": "time"})
+    )
+
+    class Meta:
+        model = ELDay
+        fields = ["day_of_week", "start_time", "end_time"]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field in self.fields:
+            self.fields[field].widget.attrs["class"] = "form-control"
+
+
+class GraduationForm(forms.ModelForm):
+    title = forms.CharField(
+        label="Name",
+        required=True,
+        widget=forms.TextInput(attrs={"class": "form-control"}),
+    )
+    image = forms.ImageField(widget=forms.FileInput(attrs={"class": "form-control"}))
+
+    class Meta:
+        model = Graduation
+        fields = ["title", "image"]
+
+
+class CertificationsForm(forms.ModelForm):
+    title = forms.CharField(
+        required=True, widget=forms.TextInput(attrs={"class": "form-control"})
+    )
+    image = forms.ImageField(widget=forms.FileInput(attrs={"class": "form-control"}))
+
+    class Meta:
+        model = Certification
+        fields = ["title", "image"]
+
+
+class SpecialtiesForm(forms.ModelForm):
+    title = forms.CharField(
+        required=True, widget=forms.TextInput(attrs={"class": "form-control"})
+    )
+
+    class Meta:
+        model = Specialtie
+        fields = ["title"]
+
+
+class RecentAchievementsForm(forms.ModelForm):
+    title = forms.CharField(
+        required=True, widget=forms.TextInput(attrs={"class": "form-control"})
+    )
+
+    class Meta:
+        model = RecentAchievement
+        fields = ("title",)

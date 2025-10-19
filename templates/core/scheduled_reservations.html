@@ -1,0 +1,112 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block body %}
+
+  <main class="main">
+
+    <div class="page-title light-background">
+      <div class="container d-lg-flex justify-content-between align-items-center">
+        <h1 class="mb-2 mb-lg-0">My Scheduled Reservations</h1>
+        <nav class="breadcrumbs">
+          <ol>
+            <li><a href='{% url "agent_detail" request.user.username %}' class='btn'>Profile</a></li>
+            <li class="current">My Scheduled Reservations</li>
+          </ol>
+        </nav>
+      </div>
+    </div>
+
+    <section id="contact-2" class="contact-2 section">
+
+      <div class="container" data-aos="fade-up" data-aos-delay="100">
+        <div class="row justify-content-center mb-5" data-aos="fade-up" data-aos-delay="200">
+          <div class="contact-form-wrapper">
+            <h2 class="text-center">My Scheduled Reservations</h2>
+            <table class="table">
+              <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Email Address</th>
+                    <th>Phone Number</th>
+                    <th>Subject</th>
+                    <th>ON</th>
+                    <th>At</th>
+                    <th>ACTION</th>
+                  </tr>
+              </thead>
+              {% for i in reservations %}
+                <tbody>
+                    </tr>
+                        <td><h5 class='text-dark'>{{i.full_name}}</h5></td>
+                        <td><h5><a href="mailto:{{i.email}}" >{{i.email}} </a></h5></td>
+                        <td><h5><a href="tel:{{i.phone}}" >{{i.phone}} </a></h5></td>
+                        <td><h5 class='text-primary'>{{i.subject}}</h5></td>
+                        <td><h5>{{i.date}}</h5></td>
+                        <td><h5>{{i.time}}</h5></td>
+                        <td>
+                          <form id="refuseForm" method="POST" style="display: inline;">
+                            {% csrf_token %}
+                            <input type="hidden" value='{{i.id}}' name="reservation_id">
+                            <button type="submit" name='action' value='Accept' class="btn btn-primary">Accept</button>
+                            <button type="submit" name='action' value='Cancel' class="btn btn-danger">Cancel</button>
+                          </form>
+                        </td>
+                        {% empty %}
+                        <td colspan="7"><h5 class='text-center mt-2'>You Don't Have any Reservations Yet</h5></td>
+                    </tr>
+                </tbody>
+              {% endfor %}
+            </table>
+          </div>
+        </div>
+
+      </div>
+
+    </section>
+
+    <div class="modal fade" id="acceptModal" tabindex="-1" aria-labelledby="acceptModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title text-success" id="acceptModalLabel">Accept</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <p>Are you sure you want to Accept this This Date?<br> <b> This action cannot be undone</b>.</p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            <form id="acceptForm" method="POST" style="display: inline;">
+              {% csrf_token %}
+              {% for i in reservations %}
+                <input type="hidden" value='{{i.id}}' name="reservation">
+              {% endfor %}
+              <button type="submit" name='action' value='Accept' class="btn btn-dark">Yes</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal fade" id="refuseModal" tabindex="-1" aria-labelledby="refuseModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title text-danger" id="refuseModalLabel">Refuse</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <p>Are you sure you want to Refuse this This Date?<br> <b> This action cannot be undone</b>.</p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+{% endblock body %}

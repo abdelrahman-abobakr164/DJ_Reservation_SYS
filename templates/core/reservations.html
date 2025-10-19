@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+
+{% block body %}
+
+    <main class="main">
+
+        <div class="page-title light-background">
+            <div class="container d-lg-flex justify-content-between align-items-center">
+                <h1 class="mb-2 mb-lg-0">Reservations</h1>
+                <nav class="breadcrumbs">
+                    <ol>
+                        <li><a href='{% url "agent_detail" request.user.username %}' class='btn'>Profile</a></li>
+                        <li class="current">Reservations</li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+
+        <section id="contact-2" class="contact-2 section">
+            <div class="container" data-aos="fade-up" data-aos-delay="100">
+                <div class="row justify-content-center mb-5" data-aos="fade-up" data-aos-delay="200">
+                    <div class="d-flex" style='margin-left:auto'>
+                        <form style=';margin-left:900px'>
+                            {% with var=request.GET.sort_by %}
+                                <input onchange="this.form.submit()" type="date" name="calendar" value="{% if var != '' and var != 'today' and var != 'all' %}{{var}}{% else %}{{request.GET.calendar}}{% endif %}" style=' width: 140px;'  class="form-control me-2">
+                            {% endwith %}
+                            <p class="form-text text-center text-muted">Special Date?</p>
+                        </form>
+                        <form style='margin-left:auto'>
+                            <select onchange="this.form.submit()" style=' width: 120px;' class='form-control' name="sort_by" id="">
+                                <option {% if request.GET.sort_by == "all" %} selected {% endif %} value="all">All</option>
+                                <option  {% if request.GET.sort_by == "today" or request.GET.sort_by is None %} selected {% endif %} value="today">Today</option>
+                                {% for date in sort_by_dates %}
+                                <option {% if request.GET.sort_by == date|stringformat:"s" %} selected {% endif %} value="{{date|date:'Y-m-d'}}">{{date}}</option>
+                                {% endfor %}
+                            </select>
+                        </form>
+                    </div>
+                    {% for date, reservations in reservation_by_date.items %}
+                        <div class="col-lg-12">
+                            <div class="contact-form-wrapper">
+                                <h2 class="text-center">{% if date == today %} Today {% else %} {{date}} {% endif %}</h2>
+                                <h4 style="float:left">{{reservations|length}} / {{agent.number_of_reservations}} </h4>
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                        <th>Name</th>
+                                        <th>Email Address</th>
+                                        <th>Phone Number</th>
+                                        <th>Subject</th>
+                                        <th>ON</th>
+                                        <th>At</th>
+                                        </tr>
+                                    </thead>
+                                    {% for i in reservations %}
+                                        <tbody>
+                                            </tr>
+                                                <td><h5 class='text-dark'>{{i.full_name}}</h5></td>
+                                                <td><h5><a href="mailto:{{i.email}}" >{{i.email}} </a></h5></td>
+                                                <td><h5><a href="tel:{{i.phone}}" >{{i.phone}} </a></h5></td>
+                                                <td><h5 class='text-primary'>{{i.subject}}</h5></td>
+                                                <td><h5>{{i.date}}</h5></td>
+                                                <td><h5>{{i.time}}</h5></td>
+                                                {% empty %}
+                                                <td colspan="6"><h5 class='text-center mt-2'>You Don't Have Reservations Yet</h5></td>
+                                            </tr>
+                                        </tbody>
+                                    {% endfor %}
+                                </table>
+                            </div>
+                            {% empty %}
+                                <h4 style='margin-top:90px' class='text-center'>You Don't Have Reservations On This Date </h4>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </section>
+    </main>
+
+{% endblock body %}

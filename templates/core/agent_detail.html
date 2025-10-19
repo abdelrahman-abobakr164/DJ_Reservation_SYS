@@ -8,11 +8,11 @@
     <!-- Page Title -->
     <div class="page-title light-background">
       <div class="container d-lg-flex justify-content-between align-items-center">
-        <h1 class="mb-2 mb-lg-0">Agent Profile</h1>
+        <h1 class="mb-2 mb-lg-0">{{agent.username}}'s Profile</h1>
         <nav class="breadcrumbs">
           <ol>
             <li><a href="/">Home</a></li>
-            <li class="current">Agent Profile</li>
+            <li class="current">{{agent.username}}'s Profile</li>
           </ol>
         </nav>
       </div>
@@ -32,7 +32,7 @@
           </div>
           <div class="col-lg-8" data-aos="fade-left" data-aos-delay="200">
             <div class="agent-info">
-              <h1 class="agent-name">{{agent.username}}</h1>
+              <h1 class="agent-name">{{agent.username}} {% if request.user.is_authenticated and request.user.username == agent.username %} <a title='Edit' href="{% url 'account' request.user.username %}"><i class="bi bi-feather"></i></a> {% endif %} </h1>
               <p class="agent-title">{{agent.job_title}}</p>
               <p class="agent-tagline">{{agent.job_des}}</p>
 
@@ -52,7 +52,8 @@
               </div>
 
               <div class="hero-actions">
-                <a href="#contact" class="btn btn-primary">Contact Me Now</a>
+                <a href="#contact" class="btn btn-primary">Get an Appointment</a>
+                <a href="#WorkingTimes" class="btn btn-outline-dark">My Working Times</a>
               </div>
             </div>
           </div>
@@ -99,7 +100,7 @@
               </div>
 
               <div class="specialties-card">
-                <h4>Specialties</h4>
+                <div class="d-flex"><h4>Specialties</h4> {% if request.user.is_authenticated and request.user.username == agent.username %} <a style='margin-left:auto;' class='me-2' title='Add Some' href="{% url 'specialties' request.user.username %}">Add Some</a> <i class="bi bi-feather"></i>{% endif %}</div>
                 <div class="specialty-tags">
                 {% for i in agent.specialties.all %}
                   <span class="specialty-tag">{{i.title}}</span>
@@ -108,20 +109,40 @@
               </div>
 
               <div class="certifications-card">
-                <h4>Certifications</h4>
+                <div class="d-flex"> <h4>Certifications & </h4>  {% if request.user.is_authenticated and request.user.username == agent.username %} <a style='margin-left:auto;' class='me-2' title="Add Some" href="{% url 'certifications' request.user.username %}">Add Some</a> <i class="bi bi-feather"></i>{% endif %}</div>
+                <div class="d-flex"> <h4>Graduation</h4>  {% if request.user.is_authenticated and request.user.username == agent.username %} <a style='margin-left:auto;' class='me-2' title="Add Some" href="{% url 'graduations' request.user.username %}">Add Some</a> <i class="bi bi-feather"></i>{% endif %}</div>
                 {% for i in agent.graduation.all %}
                 <div class="cert-item">
                   <i class="bi bi-shield-check"></i>
-                  <span><b>Graduation</b>:  {{i.title}} </span>
+                  <span><b>Graduation</b>:  {{i.title}}</span>
+                  {% if i.image %}
+                    <a style="margin-left:auto" href="{{i.image.url}}"><img style="width:30px; height:30px; " src="{{i.image.url}}" alt="GraduationImage"></a>
+                  {% endif %}
                 </div>
                 {% endfor %}
                 {% for i in agent.certifications.all %}
-                <div class="cert-item">
+                <div class="cert-item" id="WorkingTimes">
                   <i class="bi bi-award-fill"></i>
                   <span>{{ i.title }}</span>
+                  {% if i.image %}
+                    <a style="margin-left:auto" href="{{i.image.url}}"><img style="width:30px; height:30px; " src="{{i.image.url}}" alt="GraduationImage"></a>
+                  {% endif %}
                 </div>
                 {% endfor %}
 
+              </div>
+
+              <div class="certifications-card">
+                <h4 class='text-success'><i class="bi bi-calendar2-check-fill me-2"></i> Working Times </h4>
+                {% for days in agent.working_hours.all %}
+                  <div class="cert-item">
+                    <span><b>{{ days.get_day_of_week_display }} </b>:  {{days.start_time}} - {{days.end_time}} </span>
+                  </div>
+                {% endfor %}
+                
+                {% if request.user.is_authenticated and request.user.username == agent.username %}
+                  <a href='{% url "working-times" request.user.username %}' class="btn mt-2 btn-success">Edit My Working Times</a>
+                {% endif %}
               </div>
             </div>
           </div>
@@ -133,9 +154,9 @@
               <h4>My Approach</h4>
               <p>{{agent.my_approach}} </p>
               <div class="achievements">
-                <h4>Recent Achievements</h4>
+                <div class="d-flex"><h4>Recent Achievements</h4> {% if request.user.is_authenticated and request.user.username == agent.username %} <h5 style='margin-left:auto; margin-top:20px'><a class='me-2' title='Add Some' href="{% url 'recent_achievements' request.user.username %}">Add Some</a> <i class="bi bi-feather"></i> </h5>{% endif %}</div>
                 <ul>
-                {% for i in agent.recentachievement.all %}
+                {% for i in agent.recent_achievements.all %}
                   <li>{{i}}</li>
                 {% endfor %}
                 </ul>
@@ -147,46 +168,19 @@
         <!-- Contact Form -->
         <div class="contact-form-section" id="contact" data-aos="fade-up" data-aos-delay="100">
           <div class="row">
-            <div class="col-lg-8 mx-auto">
+            <div class="col-lg-7 mx-auto">
               <div class="contact-form-wrapper">
                 <h3 class="text-center mb-4">Book an Appointment</h3>
 
                 <form method="POST" >
                   {% csrf_token %}
                   <div class="row">
-                    <div class="col-md-6 mb-3">
+                    <div class="col-md-12 mb-3">
                       {{form.as_p}}
-                      {% comment %} <label for="name" class="form-label">Full Name</label>
-                      <input type="text" name="name" class="form-control" id="name" required=""> {% endcomment %}
-                    </div>
-                    {% comment %} <div class="col-md-6 mb-3">
-                      <label for="email" class="form-label">Email Address</label>
-                      <input type="email" name="email" class="form-control" id="email" required="">
-                    </div> {% endcomment %}
-                  </div>
-{% comment %} 
-                  <div class="row">
-                    <div class="col-md-6 mb-3">
-                      <label for="phone" class="form-label">Phone Number</label>
-                      <input type="tel" name="phone" class="form-control" id="phone">
-                    </div>
-                    <div class="col-md-6 mb-3">
-                      <label for="service" class="form-label">I'm Interested In</label>
-                      <select name="subject" class="form-control" id="service" required>
-
-                      </select>
                     </div>
                   </div>
-
-                  <div class="mb-3">
-                    <label for="message" class="form-label">Message</label>
-                    <textarea name="message" class="form-control" id="message" rows="5" placeholder="Tell me about your real estate needs and preferences..."></textarea>
-                  </div> {% endcomment %}
-
-                  <div class="message"></div>
-
                   <div class="text-center">
-                    <button type="submit" class="btn btn-primary btn-lg">Send Message</button>
+                    <button type="submit" class="btn btn-outline-dark w-100 btn-lg">Submit</button>
                   </div>
                 </form>
               </div>
