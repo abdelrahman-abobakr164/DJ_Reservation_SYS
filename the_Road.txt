@@ -1,2 +1,1 @@
-Email password in .env file
 scheduled reservations (modal)

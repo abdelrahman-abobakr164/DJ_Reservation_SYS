@@ -50,7 +50,7 @@ def agent_detail(request, username):
                                 agent.appointments += 1
                                 agent.save()
                             send_email_to_users.delay(
-                                f"Your {subForm.subject} Was Sent"
+                                f"Your {subForm.subject} Was Sent",
                                 f"Your {subForm.subject} Was Sent To {agent.username} and He Will Answer To You Very Soon if there a place For You",
                                 agent.email,
                                 subForm.email,
@@ -154,7 +154,7 @@ def scheduled_reservations(request, username):
                         agent.appointments += 1
 
                         send_email_to_users.delay(
-                            f"Your {reservation.subject} To {agent.username}"
+                            f"Your {reservation.subject} To {agent.username}",
                             f"Your {reservation.subject}  To {agent.username} Has Been Confirmed You Can Do {reservation.subject} on {reservation.date} At {reservation.time}",
                             agent.email,
                             reservation.email,
@@ -177,7 +177,7 @@ def scheduled_reservations(request, username):
                 else:
                     reservation.status = "Confirmed"
                     send_email_to_users.delay(
-                        f"Your {reservation.subject} To {agent.username}"
+                        f"Your {reservation.subject} To {agent.username}",
                         f"Your {reservation.subject}  To {agent.username} Has Been Confirmed You Can Do {reservation.subject} on {reservation.date} At {reservation.time}",
                         agent.email,
                         reservation.email,
@@ -185,7 +185,7 @@ def scheduled_reservations(request, username):
             elif action and action == "Cancel":
                 reservation.status = "Cancelled"
                 send_email_to_users.delay(
-                    f"Your {reservation.subject} To {agent.username}"
+                    f"Your {reservation.subject} To {agent.username}",
                     f"Your {reservation.subject}  To {agent.username} Has Been Cancelled You Can Try Again",
                     agent.email,
                     reservation.email,

@@ -23,6 +23,8 @@ media/
 staticfiles/
 
 celerybeat-schedule
+celerybeat-schedule-shm
+celerybeat-schedule-wal
 celerybeat.pid
 
 .vscode/

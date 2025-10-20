@@ -8,9 +8,11 @@ app = Celery("project")
 app.config_from_object("django.conf:settings", namespace="CELERY")
 app.autodiscover_tasks()
 
+app.conf.timezone = "Africa/Cairo"
+
 app.conf.beat_schedule = {
-    "update-schedule-reservation-every-day": {
-        "task": "core.tasks.update_shceduled_reservations",
+    "update-schedule-reservation-send-emails": {
+        "task": "core.tasks.update_reservations_emails",
         "schedule": crontab(hour=6, minute=0),
     }
 }
