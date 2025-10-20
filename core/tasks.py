@@ -54,11 +54,11 @@ def update_reservations_emails():
 
 
 @shared_task
-def send_email_to_users(subject, message, from_email, recipient_list):
+def send_email_to_users(subject, message, from_agent, to_user):
     send_mail(
         subject=subject,
         message=message,
-        from_email=from_email,
-        recipient_list=[recipient_list],
+        from_email=from_agent,
+        recipient_list=[to_user],
         fail_silently=False,
     )

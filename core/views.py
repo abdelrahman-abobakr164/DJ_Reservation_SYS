@@ -1,5 +1,6 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth import get_user_model
+from django.conf import settings
 from .tasks import send_email_to_users
 from django.contrib import messages
 from collections import defaultdict
@@ -8,6 +9,7 @@ from datetime import datetime
 from datetime import date
 from core.models import *
 from core.forms import *
+from django.core.mail import send_mail
 
 
 User = get_user_model()
@@ -28,6 +30,9 @@ def agent_detail(request, username):
             subForm.agent = agent
             time = form.cleaned_data.get("time")
             date = form.cleaned_data.get("date")
+            email_form = form.cleaned_data.get("email")
+            subject_form = form.cleaned_data.get("subject")
+
             day_of_week = date.weekday()
             if (
                 agent.number_of_reservations == agent.appointments
@@ -45,17 +50,15 @@ def agent_detail(request, username):
                         elif time >= agent_working_day.end_time:
                             messages.warning(request, "it's too Late.")
                         else:
-                            if agent.appointments == 0:
-                                subForm.status = "Confirmed"
-                                agent.appointments += 1
-                                agent.save()
-                            send_email_to_users.delay(
-                                f"Your {subForm.subject} Was Sent",
-                                f"Your {subForm.subject} Was Sent To {agent.username} and He Will Answer To You Very Soon if there a place For You",
+
+                            send_email_to_users(
+                                f"Thank You for Your Reservation {form.cleaned_data.get('full_name')}",
+                                f"Your {subject_form} Was Sent To {agent.username} and I Will Answer Send You an Email You Very Soon if there a place For You",
                                 agent.email,
-                                subForm.email,
+                                email_form,
                             )
                             subForm.save()
+
                             messages.success(
                                 request, f"Your Reservation Has Been Sented."
                             )
@@ -68,7 +71,7 @@ def agent_detail(request, username):
                         )
 
                 else:
-                    messages.warning(request, "This Time Is Already Reserved")
+                    messages.warning(request, "This Time Is Already Booked")
     else:
         form = ReservationForm(agent=agent)
     return render(request, "core/agent_detail.html", {"agent": agent, "form": form})
