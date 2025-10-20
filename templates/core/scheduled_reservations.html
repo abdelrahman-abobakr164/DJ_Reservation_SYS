@@ -1,6 +1,5 @@
 {% extends 'base.html' %}
 {% load static %}
-
 {% block body %}
 
   <main class="main">
@@ -22,7 +21,7 @@
       <div class="container" data-aos="fade-up" data-aos-delay="100">
         <div class="row justify-content-center mb-5" data-aos="fade-up" data-aos-delay="200">
           <div class="contact-form-wrapper">
-            <h2 class="text-center">My Scheduled Reservations</h2>
+            <h2 class="text-center mb-5">My Scheduled Reservations</h2>
             <table class="table">
               <thead>
                   <tr>
@@ -38,19 +37,19 @@
               {% for i in reservations %}
                 <tbody>
                     </tr>
-                        <td><h5 class='text-dark'>{{i.full_name}}</h5></td>
-                        <td><h5><a href="mailto:{{i.email}}" >{{i.email}} </a></h5></td>
-                        <td><h5><a href="tel:{{i.phone}}" >{{i.phone}} </a></h5></td>
-                        <td><h5 class='text-primary'>{{i.subject}}</h5></td>
-                        <td><h5>{{i.date}}</h5></td>
-                        <td><h5>{{i.time}}</h5></td>
-                        <td>
-                          <form id="refuseForm" method="POST" style="display: inline;">
-                            {% csrf_token %}
-                            <input type="hidden" value='{{i.id}}' name="reservation_id">
-                            <button type="submit" name='action' value='Accept' class="btn btn-primary">Accept</button>
-                            <button type="submit" name='action' value='Cancel' class="btn btn-danger">Cancel</button>
-                          </form>
+                      <td><p class='text-dark'>{{i.full_name}}</p></td>
+                      <td><p><a href="mailto:{{i.email}}" >{{i.email}} </a></p></td>
+                      <td><p><a href="tel:{{i.phone}}" >{{i.phone}} </a></p></td>
+                      <td><p>{{i.subject}}</p></td>
+                      <td><p class='text-primary'>{{i.date}}</p></td>
+                      <td><p>{{i.time}}</p></td>
+                      <td>
+                      <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#acceptModal" data-reservation-id="{{i.id}}" data-reservation-name="{{i.full_name}}">
+                        Accept
+                      </button>
+                      <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#cancelModal" data-reservation-id="{{i.id}}" data-reservation-name="{{i.full_name}}">
+                        Cancel
+                      </button>
                         </td>
                         {% empty %}
                         <td colspan="7"><h5 class='text-center mt-2'>You Don't Have any Reservations Yet</h5></td>
@@ -69,44 +68,72 @@
       <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title text-success" id="acceptModalLabel">Accept</h5>
+            <h5 class="modal-title text-success" id="acceptModalLabel">Accept Reservation</h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body">
-            <p>Are you sure you want to Accept this This Date?<br> <b> This action cannot be undone</b>.</p>
+            <p>Are you sure you want to accept the reservation for <strong id="acceptReservationName"></strong>?</p>
+            <p class="text-muted"><small>This action will confirm the appointment.</small></p>
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No, Go Back</button>
             <form id="acceptForm" method="POST" style="display: inline;">
               {% csrf_token %}
-              {% for i in reservations %}
-                <input type="hidden" value='{{i.id}}' name="reservation">
-              {% endfor %}
-              <button type="submit" name='action' value='Accept' class="btn btn-dark">Yes</button>
+              <input type="hidden" id="acceptReservationId" name="reservation_id" value="">
+              <button type="submit" name='action' value='Accept' class="btn btn-success">Yes, Accept</button>
             </form>
           </div>
         </div>
       </div>
     </div>
 
-    <div class="modal fade" id="refuseModal" tabindex="-1" aria-labelledby="refuseModalLabel" aria-hidden="true">
+    <div class="modal fade" id="cancelModal" tabindex="-1" aria-labelledby="cancelModalLabel" aria-hidden="true">
       <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title text-danger" id="refuseModalLabel">Refuse</h5>
+            <h5 class="modal-title text-danger" id="cancelModalLabel">Cancel Reservation</h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body">
-            <p>Are you sure you want to Refuse this This Date?<br> <b> This action cannot be undone</b>.</p>
+            <p>Are you sure you want to cancel the reservation for <strong id="cancelReservationName"></strong>?</p>
+            <p class="text-danger"><b>This action cannot be undone.</b></p>
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No, Go Back</button>
+            <form id="cancelForm" method="POST" style="display: inline;">
+              {% csrf_token %}
+              <input type="hidden" id="cancelReservationId" name="reservation_id" value="">
+              <button type="submit" name='action' value='Cancel' class="btn btn-danger">Yes, Cancel</button>
+            </form>
           </div>
         </div>
       </div>
     </div>
 
   </main>
+
+  <script>
+    // Handle Accept Modal
+    const acceptModal = document.getElementById('acceptModal');
+    acceptModal.addEventListener('show.bs.modal', function (event) {
+      const button = event.relatedTarget;
+      const reservationId = button.getAttribute('data-reservation-id');
+      const reservationName = button.getAttribute('data-reservation-name');
+      
+      document.getElementById('acceptReservationId').value = reservationId;
+      document.getElementById('acceptReservationName').textContent = reservationName;
+    });
+
+    // Handle Cancel Modal
+    const cancelModal = document.getElementById('cancelModal');
+    cancelModal.addEventListener('show.bs.modal', function (event) {
+      const button = event.relatedTarget;
+      const reservationId = button.getAttribute('data-reservation-id');
+      const reservationName = button.getAttribute('data-reservation-name');
+      
+      document.getElementById('cancelReservationId').value = reservationId;
+      document.getElementById('cancelReservationName').textContent = reservationName;
+    });
+  </script>
 
 {% endblock body %}

@@ -63,7 +63,7 @@ class Reservation(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        ordering = ("date", "time")
+        ordering = ("date",)
         constraints = [
             UniqueConstraint(
                 fields=["agent", "time", "date"],
