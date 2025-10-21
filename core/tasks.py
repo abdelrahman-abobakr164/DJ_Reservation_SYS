@@ -1,7 +1,9 @@
 from datetime import date
 from celery import shared_task
+from django.conf import settings
 from .models import Reservation
-from django.core.mail import send_mail
+from django.core.mail import EmailMessage
+
 import logging
 
 logger = logging.getLogger(__name__)
@@ -21,13 +23,14 @@ def update_reservations_emails():
 
         for reservation in remind_email:
             try:
-                send_mail(
+                email = EmailMessage(
                     subject=f"Your {reservation.subject} With {reservation.agent}",
-                    message=f"Your {reservation.subject} With {reservation.agent} is Today At {reservation.time} Don't Forget",
-                    from_email=reservation.agent.email,
-                    recipient_list=[reservation.email],
-                    fail_silently=False,
+                    body=f"Your {reservation.subject} With {reservation.agent} is Today At {reservation.time} Don't Forget",
+                    from_email=settings.EMAIL_HOST_USER,
+                    to=[reservation.email],
+                    reply_to=[reservation.agent.email],
                 )
+                email.send()
                 emails_count += 1
             except Exception as e:
                 failed_emails += 1
@@ -55,10 +58,11 @@ def update_reservations_emails():
 
 @shared_task
 def send_email_to_users(subject, message, from_agent, to_user):
-    send_mail(
+    email = EmailMessage(
         subject=subject,
-        message=message,
-        from_email=from_agent,
-        recipient_list=[to_user],
-        fail_silently=False,
+        body=message,
+        from_email=settings.EMAIL_HOST_USER,
+        to=[to_user],
+        reply_to=[from_agent],
     )
+    email.send()

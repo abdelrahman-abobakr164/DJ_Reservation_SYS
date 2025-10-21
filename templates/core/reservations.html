@@ -55,12 +55,12 @@
                                     {% for i in reservations %}
                                         <tbody>
                                             </tr>
-                                                <td><h5 class='text-dark'>{{i.full_name}}</h5></td>
-                                                <td><h5><a href="mailto:{{i.email}}" >{{i.email}} </a></h5></td>
-                                                <td><h5><a href="tel:{{i.phone}}" >{{i.phone}} </a></h5></td>
-                                                <td><h5 class='text-primary'>{{i.subject}}</h5></td>
-                                                <td><h5>{{i.date}}</h5></td>
-                                                <td><h5>{{i.time}}</h5></td>
+                                                <td><p style='font-size:20px' class='text-dark'>{{i.full_name}}</p></td>
+                                                <td><p style='font-size:20px'><a href="mailto:{{i.email}}" >{{i.email}} </a></p></td>
+                                                <td><p style='font-size:20px'><a href="tel:{{i.phone}}" >{{i.phone}} </a></p></td>
+                                                <td><p style='font-size:20px' class='text-primary'>{{i.subject}}</p></td>
+                                                <td><p style='font-size:20px'>{{i.date}}</p></td>
+                                                <td><p style='font-size:20px'>{{i.time}}</p></td>
                                                 {% empty %}
                                                 <td colspan="6"><h5 class='text-center mt-2'>You Don't Have Reservations Yet</h5></td>
                                             </tr>

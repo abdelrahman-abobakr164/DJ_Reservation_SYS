@@ -141,62 +141,68 @@ def scheduled_reservations(request, username):
         url = request.META.get("HTTP_REFERER")
         reservations = Reservation.objects.filter(agent=agent, status="Pending")
         if request.method == "POST":
-            reservation_id = request.POST.get("reservation_id")
-            action = request.POST.get("action")
-            reservation = get_object_or_404(Reservation, id=reservation_id)
-            scheduled_dates = Reservation.objects.filter(
-                date=reservation.date, status="Confirmed"
-            )
-            if action:
-                if action == "Accept":
-                    if reservation.date == date.today():
-                        if agent.appointments < agent.number_of_reservations:
+            try:
+                reservation_id = request.POST.get("reservation_id")
+                action = request.POST.get("action")
+                reservation = get_object_or_404(Reservation, id=reservation_id)
+                scheduled_dates = Reservation.objects.filter(
+                    date=reservation.date, status="Confirmed"
+                )
+                if action:
+                    if action == "Accept":
+                        if reservation.date == date.today():
+                            if agent.appointments < agent.number_of_reservations:
+                                reservation.status = "Confirmed"
+                                agent.appointments += 1
+                                send_email_to_users(
+                                    f"Your {reservation.subject} To {agent.username}",
+                                    f"Your {reservation.subject}  To {agent.username} Has Been Confirmed You Can Do {reservation.subject} on {reservation.date} At {reservation.time}",
+                                    agent.email,
+                                    reservation.email,
+                                )
+                            else:
+                                messages.warning(
+                                    request,
+                                    "You've reached Your Number Of Rerservations Today, If You Want More You Can Increase Your Number Of Rerservations in Account",
+                                )
+                                return redirect(url)
+
+                        elif (
+                            reservation.date > date.today()
+                            and scheduled_dates.count() == agent.number_of_reservations
+                        ):
+                            messages.warning(
+                                request,
+                                f"You've reached Your Number Of Rerservations on {reservation.date}, If You Want More You Can Increase Your Number Of Rerservations in Account",
+                            )
+                            return redirect(url)
+                        elif reservation.date < date.today():
+                            messages.warning(request, "Don't Mess")
+                            return redirect(url)
+                        else:
                             reservation.status = "Confirmed"
-                            agent.appointments += 1
                             send_email_to_users(
                                 f"Your {reservation.subject} To {agent.username}",
                                 f"Your {reservation.subject}  To {agent.username} Has Been Confirmed You Can Do {reservation.subject} on {reservation.date} At {reservation.time}",
                                 agent.email,
                                 reservation.email,
                             )
-                        else:
-                            messages.warning(
-                                request,
-                                "You've reached Your Number Of Rerservations Today, If You Want More You Can Increase Your Number Of Rerservations in Account",
-                            )
-                            return redirect(url)
-                    elif (
-                        reservation.date > date.today()
-                        and scheduled_dates.count() == agent.number_of_reservations
-                    ):
-                        messages.warning(
-                            request,
-                            f"You've reached Your Number Of Rerservations on {reservation.date}, If You Want More You Can Increase Your Number Of Rerservations in Account",
-                        )
-                        return redirect(url)
-                    else:
-                        reservation.status = "Confirmed"
+                    elif action == "Cancel":
+                        reservation.status = "Cancelled"
                         send_email_to_users(
                             f"Your {reservation.subject} To {agent.username}",
-                            f"Your {reservation.subject}  To {agent.username} Has Been Confirmed You Can Do {reservation.subject} on {reservation.date} At {reservation.time}",
+                            f"Your {reservation.subject}  To {agent.username} Has Been Cancelled You Can Try Again",
                             agent.email,
                             reservation.email,
                         )
-                elif action == "Cancel":
-                    reservation.status = "Cancelled"
-                    send_email_to_users(
-                        f"Your {reservation.subject} To {agent.username}",
-                        f"Your {reservation.subject}  To {agent.username} Has Been Cancelled You Can Try Again",
-                        agent.email,
-                        reservation.email,
-                    )
-                else:
-                    messages.error(request, "Don't Mess")
+                    else:
+                        messages.error(request, "Don't Mess")
+                        return redirect(url)
+                    agent.save()
+                    reservation.save()
                     return redirect(url)
-                agent.save()
-                reservation.save()
-                return redirect(url)
-
+            except Reservation.DoesNotExist:
+                return None
         return render(
             request, "core/scheduled_reservations.html", {"reservations": reservations}
         )
