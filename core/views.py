@@ -1,7 +1,8 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth import get_user_model
-from django.conf import settings
 from .tasks import send_email_to_users
+from django.utils.text import slugify
+from django.core.cache import cache
 from django.contrib import messages
 from collections import defaultdict
 from django.http import QueryDict
@@ -15,12 +16,20 @@ User = get_user_model()
 
 
 def agents(request):
-    users = User.objects.all()
+    users = cache.get("all_agents")
+    if not users:
+        users = list(User.objects.all())
+        cache.set("all_agents", users, timeout=60 * 15)
     return render(request, "core/agents.html", {"users": users})
 
 
 def agent_detail(request, username):
-    agent = get_object_or_404(User, username=username)
+    cache_key = f"agent_detail_{slugify(username)}"
+    agent = cache.get(cache_key)
+    if not agent:
+        agent = get_object_or_404(User, username=username)
+        cache.set(cache_key, agent, timeout=60 * 15)
+
     url = request.META.get("HTTP_REFERER")
     if request.method == "POST":
         form = ReservationForm(request.POST, agent=agent)
