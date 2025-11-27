@@ -27,10 +27,9 @@ def edit(request, username):
 @login_required
 @authenticated_and_owner(User)
 def working_times(request, username):
-    agent = get_object_or_404(User, username=username)
+    agent = User.objects.prefetch_related("working_hours").get(username=username)
     form = WorkingTimesForm()
     url = request.META.get("HTTP_REFERER")
-    WorkingTimes = ELDay.objects.filter(agent=agent)
 
     if request.method == "POST":
         action = request.POST.get("action")
@@ -55,14 +54,14 @@ def working_times(request, username):
             else:
                 messages.error(request, "Don't Mess")
 
-    context = {"WorkingTimes": WorkingTimes, "form": form}
+    context = {"agent": agent, "form": form}
     return render(request, "accounts/working_times.html", context)
 
 
 @login_required
 @authenticated_and_owner(User)
 def graduations(request, username):
-    agent = get_object_or_404(User, username=username)
+    agent = User.objects.prefetch_related("graduation").get(username=username)
     form = GraduationForm()
     url = request.META.get("HTTP_REFERER")
     if request.method == "POST":
@@ -93,7 +92,7 @@ def graduations(request, username):
 @login_required
 @authenticated_and_owner(User)
 def certifications(request, username):
-    agent = get_object_or_404(User, username=username)
+    agent = User.objects.prefetch_related("certifications").get(username=username)
     form = CertificationsForm()
     url = request.META.get("HTTP_REFERER")
     if request.method == "POST":
@@ -124,7 +123,7 @@ def certifications(request, username):
 @login_required
 @authenticated_and_owner(User)
 def recent_achievements(request, username):
-    agent = get_object_or_404(User, username=username)
+    agent = User.objects.prefetch_related("recent_achievements").get(username=username)
     form = RecentAchievementsForm()
     url = request.META.get("HTTP_REFERER")
     if request.method == "POST":
@@ -157,15 +156,16 @@ def recent_achievements(request, username):
 @login_required
 @authenticated_and_owner(User)
 def specialties(request, username):
-    agent = get_object_or_404(User, username=username)
+    agent = User.objects.prefetch_related("specialties").get(username=username)
+
     url = request.META.get("HTTP_REFERER")
     form = SpecialtiesForm()
     if request.method == "POST":
         action = request.POST.get("action")
+        specialties_id = request.POST.gt("specialties_id")
 
         if action:
             if action == "Remove":
-                specialties_id = request.POST.get("specialties_id")
                 specialtie_id = get_object_or_404(Specialtie, id=specialties_id)
                 specialtie_id.delete()
                 return redirect(url)

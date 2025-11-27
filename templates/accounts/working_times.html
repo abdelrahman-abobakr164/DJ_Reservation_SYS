@@ -28,7 +28,7 @@
                     <div class="col">
                         <div class="certifications-card">
                             <h3 class='text-black mb-5'>My Working Times <b>{{WorkingTimes.count}}/7</b> </h3>
-                            {% for days in WorkingTimes %}
+                            {% for days in agent.working_hours.all %}
                             <div class="cert-item d-flex">
                                 <span>
                                   <h5>

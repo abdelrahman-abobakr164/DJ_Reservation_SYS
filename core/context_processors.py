@@ -9,5 +9,5 @@ def navbar(request):
         if request.user.is_authenticated:
             reservations_count = Reservation.objects.filter(
                 agent=request.user, status="Pending"
-            ).count()
+            ).select_related('agent').count()
         return {"reservations_count": reservations_count}
