@@ -31,11 +31,11 @@ INSTALLED_APPS = [
 ]
 
 JAZZMIN_SETTINGS = {
-    "site_title": "Home Space Admin",
-    "site_header": "Home Space",
-    "site_brand": "Home Space",
-    "welcome_sign": "Welcome to the Home Space Admin",
-    "copyright": "Home Space",
+    "site_title": "Agent Space Admin",
+    "site_header": "Agent Space",
+    "site_brand": "Agent Space",
+    "welcome_sign": "Welcome to the Agent Space Admin",
+    "copyright": "Agent Space",
     "search_model": ["accounts.User"],
     "user_avatar": None,
 }

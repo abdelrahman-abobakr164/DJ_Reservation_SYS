@@ -36,7 +36,7 @@ class ReservationForm(forms.ModelForm):
         self.fields["full_name"].widget.attrs["placeholder"] = "Full Name"
         self.fields["email"].widget.attrs["placeholder"] = "Email Address"
         self.fields["email"].help_text = (
-            "Write a Right Email Address Because I Will Contact To You"
+            "Write a Right Email Address Cuz I'll Contact You"
         )
         self.fields["phone"].widget.attrs["placeholder"] = "+20xxxxxxxxxx"
 
