@@ -8,7 +8,7 @@ urlpatterns = [
     path(
         "agent-<str:username>'s/scheduled-reservations",
         views.scheduled_reservations,
-        name="scheduled-reservations",
+        name="scheduled_reservations",
     ),
     path(
         "agent-<str:username>'s/reservations",

@@ -165,7 +165,9 @@
           </div>
         </div>
 
-        <!-- Contact Form -->
+        
+        {% if request.user != agent or request.user.is_anonymous %}
+        {% endif %}
         <div class="contact-form-section" id="contact" data-aos="fade-up" data-aos-delay="100">
           <div class="row">
             <div class="col-lg-7 mx-auto">

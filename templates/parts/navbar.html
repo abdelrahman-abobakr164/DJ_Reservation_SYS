@@ -31,7 +31,7 @@
                 </ul>
             </div>
           </li>
-          <li class='d-flex me-1'><a href="{% url 'scheduled-reservations' request.user.username %}" {% if 'scheduled-reservations' in request.path %} class="active" {% endif %} > <i class="bi bi-people-fill" style="font-size:30px"></i> </a> {{reservations_count}}</li> 
+          <li class='d-flex me-1'><a href="{% url 'scheduled_reservations' request.user.username %}" {% if 'scheduled-reservations' in request.path %} class="active" {% endif %} > <i class="bi bi-people-fill" style="font-size:30px"></i> </a> {{reservations_count}}</li> 
         {% else %}
         <li><a href="/" {% if request.path ==  '/'  %} class="active" {% endif %}>Home</a></li>
 
