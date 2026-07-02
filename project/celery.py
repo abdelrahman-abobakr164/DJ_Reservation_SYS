@@ -13,6 +13,6 @@ app.conf.timezone = "Africa/Cairo"
 app.conf.beat_schedule = {
     "update-schedule-reservation-send-emails": {
         "task": "core.tasks.update_reservations_emails",
-        "schedule": crontab(hour=6, minute=0),
+        "schedule": crontab(minute=0),
     }
 }
