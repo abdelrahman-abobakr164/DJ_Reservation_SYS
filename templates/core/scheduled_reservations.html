@@ -1,0 +1,139 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block body %}
+
+  <main class="main">
+
+    <div class="page-title light-background">
+      <div class="container d-lg-flex justify-content-between align-items-center">
+        <h1 class="mb-2 mb-lg-0">My Scheduled Reservations</h1>
+        <nav class="breadcrumbs">
+          <ol>
+            <li><a href='{% url "agent_detail" request.user.username %}' class='btn'>Profile</a></li>
+            <li class="current">My Scheduled Reservations</li>
+          </ol>
+        </nav>
+      </div>
+    </div>
+
+    <section id="contact-2" class="contact-2 section">
+
+      <div class="container" data-aos="fade-up" data-aos-delay="100">
+        <div class="row justify-content-center mb-5" data-aos="fade-up" data-aos-delay="200">
+          <div class="contact-form-wrapper">
+            <h2 class="text-center mb-5">My Scheduled Reservations</h2>
+            <table class="table">
+              <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Email Address</th>
+                    <th>Phone Number</th>
+                    <th>Subject</th>
+                    <th>ON</th>
+                    <th>At</th>
+                    <th>ACTION</th>
+                  </tr>
+              </thead>
+              {% for i in reservations %}
+                <tbody>
+                    </tr>
+                      <td><p class='text-dark'>{{i.full_name}}</p></td>
+                      <td><p><a href="mailto:{{i.email}}" >{{i.email}} </a></p></td>
+                      <td><p><a href="tel:{{i.phone}}" >{{i.phone}} </a></p></td>
+                      <td><p>{{i.subject}}</p></td>
+                      <td><p class='text-primary'>{{i.date}}</p></td>
+                      <td><p>{{i.time}}</p></td>
+                      <td>
+                      <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#acceptModal" data-reservation-id="{{i.id}}" data-reservation-name="{{i.full_name}}">
+                        Accept
+                      </button>
+                      <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#cancelModal" data-reservation-id="{{i.id}}" data-reservation-name="{{i.full_name}}">
+                        Cancel
+                      </button>
+                        </td>
+                        {% empty %}
+                        <td colspan="7"><h5 class='text-center mt-2'>You Don't Have any Reservations Yet</h5></td>
+                    </tr>
+                </tbody>
+              {% endfor %}
+            </table>
+          </div>
+        </div>
+
+      </div>
+
+    </section>
+
+    <div class="modal fade" id="acceptModal" tabindex="-1" aria-labelledby="acceptModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title text-success" id="acceptModalLabel">Accept Reservation</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <p>Are you sure you want to accept the reservation for <strong id="acceptReservationName"></strong>?</p>
+            <p class="text-muted"><small>This action will be confirm the appointment.</small></p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No, Go Back</button>
+            <form id="acceptForm" method="POST" style="display: inline;">
+              {% csrf_token %}
+              <input type="hidden" id="acceptReservationId" name="reservation_id" value="">
+              <button type="submit" name='action' value='Accept' class="btn btn-success">Yes, Accept</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal fade" id="cancelModal" tabindex="-1" aria-labelledby="cancelModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title text-danger" id="cancelModalLabel">Cancel Reservation</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <p>Are you sure you want to cancel the reservation for <strong id="cancelReservationName"></strong>?</p>
+            <p class="text-danger"><b>This action cannot be undone.</b></p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No, Go Back</button>
+            <form id="cancelForm" method="POST" style="display: inline;">
+              {% csrf_token %}
+              <input type="hidden" id="cancelReservationId" name="reservation_id" value="">
+              <button type="submit" name='action' value='Cancel' class="btn btn-danger">Yes, Cancel</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <script>
+    // Handle Accept Modal
+    const acceptModal = document.getElementById('acceptModal');
+    acceptModal.addEventListener('show.bs.modal', function (event) {
+      const button = event.relatedTarget;
+      const reservationId = button.getAttribute('data-reservation-id');
+      const reservationName = button.getAttribute('data-reservation-name');
+      
+      document.getElementById('acceptReservationId').value = reservationId;
+      document.getElementById('acceptReservationName').textContent = reservationName;
+    });
+
+    // Handle Cancel Modal
+    const cancelModal = document.getElementById('cancelModal');
+    cancelModal.addEventListener('show.bs.modal', function (event) {
+      const button = event.relatedTarget;
+      const reservationId = button.getAttribute('data-reservation-id');
+      const reservationName = button.getAttribute('data-reservation-name');
+      
+      document.getElementById('cancelReservationId').value = reservationId;
+      document.getElementById('cancelReservationName').textContent = reservationName;
+    });
+  </script>
+
+{% endblock body %}
