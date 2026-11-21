@@ -55,54 +55,57 @@ def agent_detail(request, username):
 
 def _handle_reservation(request, form, agent):
     today = timezone.now().date()
-
-    time = form.cleaned_data["time"]
     date = form.cleaned_data["date"]
-    email = form.cleaned_data["email"]
-    subject = form.cleaned_data["subject"]
-    full_name = form.cleaned_data["full_name"]
-
+    time = form.cleaned_data["time"]
     day_of_week = date.weekday()
 
-    if agent.number_of_reservations == agent.appointments or date == today:
-        messages.warning(request, "Applications are Closed for Today.")
-        return redirect("agent_detail", username=agent.username)
+    def reject(message):
+        form.add_error(None, message)
+        return render(request, "core/agent_detail.html", {"form": form, "agent": agent})
 
-    subForm = form.save(commit=False)
-    subForm.agent = agent
+    if date < today or (
+        agent.number_of_reservations == agent.appointments and date == today
+    ):
+        return reject("Applications are Closed for Today.")
 
-    if not subForm.is_available():
-        messages.warning(request, "This Time Is Already Booked")
-        return redirect("agent_detail", username=agent.username)
-        
+    agent_working_day = get_object_or_404(ELDay, agent=agent, day_of_week=day_of_week)
 
-    try:
-        with transaction.atomic():
-            agent_working_day = ELDay.objects.get(agent=agent, day_of_week=day_of_week)
+    if time < agent_working_day.start_time:
+        return reject(request, "it's too earlier.")
 
-            if time < agent_working_day.start_time:
-                messages.warning(request, "it's too earlier.")
-            if time >= agent_working_day.end_time:
-                messages.warning(request, "it's too Late.")
+    if time >= agent_working_day.end_time:
+        return reject(request, "it's too Late.")
 
-            subForm.save()
+    with transaction.atomic():
+        User.objects.select_for_update().get(pk=agent.pk)
 
-            transaction.on_commit(
-                lambda: send_email_to_users.delay(
-                    f"Thank You for Your Reservation {full_name}",
-                    f"Your {subject} Was Sent To {agent.username} and I Will Answer Send You an Email You Very Soon if there a place For You",
-                    agent.email,
-                    email,
-                )
+        subForm = form.save(commit=False)
+        subForm.agent = agent
+
+        if not subForm.is_available():
+            form.add_error(None, "This time is already booked.")
+            return render(request, "booking.html", {"form": form, "agent": agent})
+
+        subForm.save()
+        form.save_m2m()
+
+        full_name = form.cleaned_data["full_name"]
+        request_subject = form.cleaned_data["subject"]
+        user_email = form.cleaned_data["email"]
+
+        email_subject = f"Thank you for your reservation, {full_name}"
+        email_body = (
+            f'Your request "{request_subject}" was sent to {agent.username}. '
+            "They will email you soon if a place is available."
+        )
+
+        transaction.on_commit(
+            lambda: send_email_to_users.delay(
+                email_subject, email_body, agent.email, user_email
             )
+        )
 
-            messages.success(
-                request, f"Your Reservation Has Been Submitted successfully."
-            )
-
-    except ELDay.DoesNotExist:
-        messages.warning(request, f"{agent.username} Not Available at This Time")
-
+    messages.success(request, f"Your Reservation Has Been Submitted successfully.")
     return redirect("agent_detail", username=agent.username)
 
 
